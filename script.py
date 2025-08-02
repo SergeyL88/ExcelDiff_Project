@@ -75,12 +75,7 @@ def equal_products(doc1, doc2):
                         print(ex)
                 elif sheet_name == "Итого":
                     break
-                # else:
-                #     try:
-                #         outsource_list.append([row1[0], row2[1], row1[1], row2[1] - row1[1], check_percent(row2[1], row1[1])])
-                #         break
-                #     except TypeError as ex:
-                #         print(ex)
+
             continue
 
 def not_equal_products(data1, data2):
@@ -91,13 +86,47 @@ def not_equal_products(data1, data2):
                 print(data1.iloc[index1,0])
 
 def styler(row, font_size: int, font_weight: bool, color, indent: int = 0,):
-    print(f"Row: {row} = {row[0]}")
     row[0].alignment = Alignment(vertical='center', indent=indent)
     for cell in row:
         cell.border = border
         cell.font = Font(size=font_size, bold=font_weight)
-        # cell.alignment = Alignment(vertical='center', indent=indent)
         cell.fill = PatternFill("solid", fgColor=color, fill_type='solid')
+
+def roll_row(coordinate_list: dict, ws, outline_level = 1):
+    ws = wb.active
+
+    for key,value in coordinate_list.items():
+        ws = wb[key]
+        index = 0
+        # for i in range(len(value)):
+        #     print(f" {i} == {len(value)}, {value[i]}")
+        #     ws.row_dimensions.group(value[i] + 1, value[i+1] - 1, outline_level=outline_level, hidden=True)
+
+        while index < len(value) - 1:
+            ws.row_dimensions.group(value[index] + 1, value[index + 1] - 1, outline_level=outline_level, hidden=True)
+            print(value[index])
+            index += 1
+        print(f'{value[index]} , {ws.max_row}')
+        ws.row_dimensions.group(value[-1] + 1, ws.max_row, outline_level=outline_level, hidden=True)
+
+
+            # elif counter == len(value):
+            #     print(f" ELIF i == LEN {i} == {len(value)}")
+            # else:
+            #     print("Else")
+            #     print(f"{sheet_name} Start:{value[i] + 1}, End:{ws.max_row}")
+            #     ws.row_dimensions.group(value[i], ws.max_row, outline_level=outline_level, hidden=True)
+
+            # except IndexError as ex:
+            #     if outline_level == 1:
+            #         ws.row_dimensions.group(value[i], ws.max_row, outline_level=outline_level, hidden=True)
+            #     elif outline_level == 2:
+            #         ws.row_dimensions.group(value[i], ws.max_row , outline_level=outline_level, hidden=True)
+            #     elif outline_level == 5:
+            #         ws.row_dimensions.group(value[i], ws.max_row , outline_level=outline_level, hidden=True)
+
+
+
 
 doc1_name = "Остаток ГП и ПФ на 01.07.24.xlsx"
 doc2_name = "Остаток ГП и ПФ на 01.07.25.xlsx"
@@ -151,8 +180,11 @@ mf_goodies_lvl5 = ['Лето 0,5 СТМ', 'Зима 0,35 СТМ', 'Лето 0,7 
                    'Готовая продукция Global Village', 'Готовая продукция АШАН', 'Готовая продукция_Лента 1 л', 'Готовая продукция_Лента 250 мл', 'Готовая продукция_ОКЕЙ 1 литр', 'Готовая продукция_ТМ «DELIISE»', 'Готовая продукция_ТМ «SPAR» 1000 мл',
                    'Готовая продукция_ТМ «SPAR» 250 мл', 'Готовая продукция_ТМ PREMIERE of TASTE 250 мл', 'Готовая продукция_ТМ Монетка 250 мл', 'Готовая продукция_ТМ. «МКухня» 1л.', 'Готовая продукция т.м. "Пиканта" 250 мл', 'Готовая продукция т.м. "Пиканта" 250 мл (наборы)',
                    'Готовая продукция Пиканта (пюре) по 6 шт', 'Сиропы_Baresto 0,25л. ТВ', 'Сиропы_Baresto 1 л.', 'Сиропы_Пиканта', 'Десерты_Пиканта', 'Десерты_АШАН', 'Сироп_PREMIERE of TASTE 0,25л.', 'Сиропы_BONVIDA 1л.', 'Сиропы_CENSA 1л.', 'Сиропы_DELIISE 0,25', 'Сиропы_PREMIUM CLUB 0,25л.',
-                   'Сиропы_SPAR 0,25л.', 'Сиропы_АШАН 0,25л.', 'Сиропы_Магнит 1л.', 'Сиропы_МаркетПерекресток 0,25л.', 'Сиропы_Монетка 0,25 л.', 'Сиропы_ОКЕЙ 1л.']
-
+                   'Сиропы_SPAR 0,25л.', 'Сиропы_АШАН 0,25л.', 'Сиропы_Магнит 1л.', 'Сиропы_МаркетПерекресток 0,25л.', 'Сиропы_Монетка 0,25 л.', 'Сиропы_ОКЕЙ 1л.', 'Сиропы_Монетка 0,25 л.']
+goods_rows_lvl2_dict = {}
+goods_rows_lvl3_dict = {}
+goods_rows_lvl4_dict = {}
+goods_rows_lvl5_dict = {}
 mf1_list = []
 mf2_list = []
 mf3_list = []
@@ -185,6 +217,10 @@ if __name__ == '__main__':
 
 
     for sheet_name in wb.sheetnames:
+        goods_rows_lvl2_dict[sheet_name] = []
+        goods_rows_lvl3_dict[sheet_name] = []
+        goods_rows_lvl4_dict[sheet_name] = []
+        goods_rows_lvl5_dict[sheet_name] = []
         ws = wb[sheet_name]
         ws.freeze_panes = 'A2'
         ws.sheet_properties.outlinePr.summaryBelow = False
@@ -201,20 +237,30 @@ if __name__ == '__main__':
                 styler(row, 20,True,'FBE559')
             if row[0].value in dept_list:
                 styler(row, 18,True,'FBF2D8')
-                # for cell in row:
-                #     cell.font = Font(size=18, bold=True)
-                #     cell.alignment = Alignment(vertical='center')
-                #     cell.fill = PatternFill("solid", fgColor="F8F2D8", fill_type='solid')
             elif row[0].value == "ГП и ПФ":
                 styler(row, 16,True,'FBF9EC', 3)
             elif row[0].value in mf_goodies_lvl2:
+                goods_rows_lvl2_dict[sheet_name].append(row[0].row)
                 styler(row, 16,True,'FBF9EC', 6)
             elif row[0].value in mf_goodies_lvl3:
+                goods_rows_lvl3_dict[sheet_name].append(row[0].row)
                 styler(row, 16, True, 'FBF9EC', 9)
             elif row[0].value in mf_goodies_lvl4:
+                goods_rows_lvl4_dict[sheet_name].append(row[0].row)
                 styler(row, 16, True, 'FBF9EC', 12)
             elif row[0].value in mf_goodies_lvl5:
+                goods_rows_lvl5_dict[sheet_name].append(row[0].row)
                 styler(row, 16, True, 'FBF9EC', 15)
             else:
                 styler(row, 16,False,'FFFFFF', 18)
+        # roll_row(goods_rows_lvl2_dict, ws)
+        # roll_row(goods_rows_lvl3_dict, ws, 2)
+        # roll_row(goods_rows_lvl4_dict, ws, 3)
+        roll_row(goods_rows_lvl5_dict, ws, 4)
+    for key, value in goods_rows_lvl2_dict.items():
+        print(f"LVL2 Key: {key}, Value: {value}")
+    for key, value in goods_rows_lvl3_dict.items():
+        print(f"LVL3 Key: {key}, Value: {value}")
+    for key, value in goods_rows_lvl5_dict.items():
+        print(f"LVL5 Key: {key}, Value: {value}")
     wb.save(PATH + 'TestChanges2.xlsx')
